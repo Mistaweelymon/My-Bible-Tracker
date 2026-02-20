@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bible Chapter Tracker</title>
+    <style>
+        :root {
+            --bg: #f8fafc;
+            --text: #1e293b;
+            --primary: #4f46e5;
+            --card: #ffffff;
+            --border: #e2e8f0;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            -webkit-tap-highlight-color: transparent;
+        }
+        header {
+            background: white;
+            width: 100%;
+            padding: 20px;
+            text-align: center;
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        h1 { margin: 0; font-size: 1.5rem; font-weight: 800; color: var(--primary); }
+        #progress-bar-container {
+            width: 90%;
+            max-width: 500px;
+            height: 10px;
+            background: #e2e8f0;
+            border-radius: 5px;
+            margin: 10px auto;
+            overflow: hidden;
+        }
+        #progress-bar {
+            height: 100%;
+            background: var(--primary);
+            width: 0%;
+            transition: width 0.3s;
+        }
+        #stats { font-size: 0.8rem; font-weight: bold; color: #64748b; }
+        
+        .container {
+            width: 100%;
+            max-width: 500px;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+        .book-section {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            margin-bottom: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+        }
+        .book-header {
+            padding: 15px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 700;
+            user-select: none;
+        }
+        .book-header:active { background: #f1f5f9; }
+        .book-title { display: flex; align-items: center; gap: 8px; }
+        .book-count { font-size: 0.7rem; color: #94a3b8; background: #f1f5f9; padding: 2px 8px; border-radius: 10px; }
+        
+        .chapter-grid {
+            display: none;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            padding: 15px;
+            background: #fcfdfe;
+            border-top: 1px solid var(--border);
+        }
+        .chapter-btn {
+            aspect-ratio: 1;
+            border: 1px solid var(--border);
+            background: white;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.9rem;
+            font-weight: 600;
+            color: #64748b;
+            cursor: pointer;
+            transition: 0.1s;
+        }
+        .chapter-btn.done {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+        }
+        .bulk-actions {
+            padding: 0 15px 15px 15px;
+            display: flex;
+            gap: 10px;
+        }
+        .bulk-btn {
+            flex: 1;
+            font-size: 0.7rem;
+            padding: 6px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: white;
+            color: #64748b;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .reset-btn {
+            margin: 40px 0;
+            padding: 10px 20px;
+            background: #ef4444;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Bible Tracker</h1>
+        <div id="progress-bar-container"><div id="progress-bar"></div></div>
+        <div id="stats">0 / 1189 Chapters Completed (0%)</div>
+    </header>
+
+    <div class="container" id="books-container">
+        <!-- Books will be injected here -->
+    </div>
+
+    <button class="reset-btn" onclick="resetAll()">Reset All Progress</button>
+
+    <script>
+        const books = [
+            {n:"Genesis", c:50}, {n:"Exodus", c:40}, {n:"Leviticus", c:27}, {n:"Numbers", c:36}, {n:"Deuteronomy", c:34},
+            {n:"Joshua", c:24}, {n:"Judges", c:21}, {n:"Ruth", c:4}, {n:"1 Samuel", c:31}, {n:"2 Samuel", c:24},
+            {n:"1 Kings", c:22}, {n:"2 Kings", c:25}, {n:"1 Chronicles", c:29}, {n:"2 Chronicles", c:36}, {n:"Ezra", c:10},
+            {n:"Nehemiah", c:13}, {n:"Esther", c:10}, {n:"Job", c:42}, {n:"Psalms", c:150}, {n:"Proverbs", c:31},
+            {n:"Ecclesiastes", c:12}, {n:"Song of Solomon", c:8}, {n:"Isaiah", c:66}, {n:"Jeremiah", c:52}, {n:"Lamentations", c:5},
+            {n:"Ezekiel", c:48}, {n:"Daniel", c:12}, {n:"Hosea", c:14}, {n:"Joel", c:3}, {n:"Amos", c:9},
+            {n:"Obadiah", c:1}, {n:"Jonah", c:4}, {n:"Micah", c:7}, {n:"Nahum", c:3}, {n:"Habakkuk", c:3},
+            {n:"Zephaniah", c:3}, {n:"Haggai", c:2}, {n:"Zechariah", c:14}, {n:"Malachi", c:4},
+            {n:"Matthew", c:28}, {n:"Mark", c:16}, {n:"Luke", c:24}, {n:"John", c:21}, {n:"Acts", c:28},
+            {n:"Romans", c:16}, {n:"1 Corinthians", c:16}, {n:"2 Corinthians", c:13}, {n:"Galatians", c:6},
+            {n:"Ephesians", c:6}, {n:"Philippians", c:4}, {n:"Colossians", c:4}, {n:"1 Thessalonians", c:5},
+            {n:"2 Thessalonians", c:3}, {n:"1 Timothy", c:6}, {n:"2 Timothy", c:4}, {n:"Titus", c:3},
+            {n:"Philemon", c:1}, {n:"Hebrews", c:13}, {n:"James", c:5}, {n:"1 Peter", c:5},
+            {n:"2 Peter", c:3}, {n:"1 John", c:5}, {n:"2 John", c:1}, {n:"3 John", c:1},
+            {n:"Jude", c:1}, {n:"Revelation", c:22}
+        ];
+
+        let state = JSON.parse(localStorage.getItem('bible_check_state') || '{}');
+
+        function save() {
+            localStorage.setItem('bible_check_state', JSON.stringify(state));
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const total = 1189;
+            const done = Object.values(state).filter(v => v === true).length;
+            const pct = Math.round((done / total) * 100);
+            document.getElementById('progress-bar').style.width = pct + '%';
+            document.getElementById('stats').innerText = `${done} / ${total} Chapters Completed (${pct}%)`;
+        }
+
+        function toggleChapter(bookName, ch, btn) {
+            const key = `${bookName}-${ch}`;
+            state[key] = !state[key];
+            if (!state[key]) delete state[key];
+            btn.classList.toggle('done', !!state[key]);
+            save();
+            updateBookCount(bookName);
+        }
+
+        function updateBookCount(bookName) {
+            const book = books.find(b => b.n === bookName);
+            const countEl = document.getElementById(`count-${bookName}`);
+            const done = Array.from({length: book.c}, (_, i) => state[`${bookName}-${i+1}`]).filter(Boolean).length;
+            countEl.innerText = `${done}/${book.c}`;
+        }
+
+        function toggleBook(bookName) {
+            const grid = document.getElementById(`grid-${bookName}`);
+            const isVisible = grid.style.display === 'grid';
+            grid.style.display = isVisible ? 'none' : 'grid';
+        }
+
+        function bulk(bookName, check) {
+            const book = books.find(b => b.n === bookName);
+            for (let i = 1; i <= book.c; i++) {
+                const key = `${bookName}-${i}`;
+                if (check) state[key] = true;
+                else delete state[key];
+                
+                const btn = document.getElementById(`btn-${bookName}-${i}`);
+                if (btn) {
+                    if (check) btn.classList.add('done');
+                    else btn.classList.remove('done');
+                }
+            }
+            save();
+            updateBookCount(bookName);
+        }
+
+        function resetAll() {
+            if (confirm("Are you sure you want to reset ALL progress?")) {
+                state = {};
+                save();
+                location.reload();
+            }
+        }
+
+        function init() {
+            const container = document.getElementById('books-container');
+            books.forEach(book => {
+                const section = document.createElement('div');
+                section.className = 'book-section';
+                
+                const doneCount = Array.from({length: book.c}, (_, i) => state[`${book.n}-${i+1}`]).filter(Boolean).length;
+                
+                section.innerHTML = `
+                    <div class="book-header" onclick="toggleBook('${book.n}')">
+                        <div class="book-title">${book.n}</div>
+                        <div class="book-count" id="count-${book.n}">${doneCount}/${book.c}</div>
+                    </div>
+                    <div class="chapter-grid" id="grid-${book.n}">
+                        <div class="bulk-actions" style="grid-column: span 5">
+                            <button class="bulk-btn" onclick="event.stopPropagation(); bulk('${book.n}', true)">Check All</button>
+                            <button class="bulk-btn" onclick="event.stopPropagation(); bulk('${book.n}', false)">Clear All</button>
+                        </div>
+                        ${Array.from({length: book.c}, (_, i) => {
+                            const ch = i + 1;
+                            const isDone = state[`${book.n}-${ch}`] ? 'done' : '';
+                            return `<button id="btn-${book.n}-${ch}" class="chapter-btn ${isDone}" onclick="toggleChapter('${book.n}', ${ch}, this)">${ch}</button>`;
+                        }).join('')}
+                    </div>
+                `;
+                container.appendChild(section);
+            });
+            updateProgress();
+        }
+
+        init();
+    </script>
+</body>
+</html>
