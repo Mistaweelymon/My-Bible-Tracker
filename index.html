@@ -1,265 +1,363 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Bible Chapter Tracker</title>
-    <style>
-        :root {
-            --bg: #f8fafc;
-            --text: #1e293b;
-            --primary: #4f46e5;
-            --card: #ffffff;
-            --border: #e2e8f0;
-        }
-        body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-            background-color: var(--bg);
-            color: var(--text);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            -webkit-tap-highlight-color: transparent;
-        }
-        header {
-            background: white;
-            width: 100%;
-            padding: 20px;
-            text-align: center;
-            border-bottom: 1px solid var(--border);
-            position: sticky;
-            top: 0;
-            z-index: 10;
-        }
-        h1 { margin: 0; font-size: 1.5rem; font-weight: 800; color: var(--primary); }
-        #progress-bar-container {
-            width: 90%;
-            max-width: 500px;
-            height: 10px;
-            background: #e2e8f0;
-            border-radius: 5px;
-            margin: 10px auto;
-            overflow: hidden;
-        }
-        #progress-bar {
-            height: 100%;
-            background: var(--primary);
-            width: 0%;
-            transition: width 0.3s;
-        }
-        #stats { font-size: 0.8rem; font-weight: bold; color: #64748b; }
-        
-        .container {
-            width: 100%;
-            max-width: 500px;
-            padding: 20px;
-            box-sizing: border-box;
-        }
-        .book-section {
-            background: var(--card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            margin-bottom: 12px;
-            overflow: hidden;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.02);
-        }
-        .book-header {
-            padding: 15px;
-            cursor: pointer;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            font-weight: 700;
-            user-select: none;
-        }
-        .book-header:active { background: #f1f5f9; }
-        .book-title { display: flex; align-items: center; gap: 8px; }
-        .book-count { font-size: 0.7rem; color: #94a3b8; background: #f1f5f9; padding: 2px 8px; border-radius: 10px; }
-        
-        .chapter-grid {
-            display: none;
-            grid-template-columns: repeat(5, 1fr);
-            gap: 8px;
-            padding: 15px;
-            background: #fcfdfe;
-            border-top: 1px solid var(--border);
-        }
-        .chapter-btn {
-            aspect-ratio: 1;
-            border: 1px solid var(--border);
-            background: white;
-            border-radius: 8px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: 0.9rem;
-            font-weight: 600;
-            color: #64748b;
-            cursor: pointer;
-            transition: 0.1s;
-        }
-        .chapter-btn.done {
-            background: var(--primary);
-            color: white;
-            border-color: var(--primary);
-        }
-        .bulk-actions {
-            padding: 0 15px 15px 15px;
-            display: flex;
-            gap: 10px;
-        }
-        .bulk-btn {
-            flex: 1;
-            font-size: 0.7rem;
-            padding: 6px;
-            border-radius: 6px;
-            border: 1px solid var(--border);
-            background: white;
-            color: #64748b;
-            font-weight: bold;
-            cursor: pointer;
-        }
-        
-        .reset-btn {
-            margin: 40px 0;
-            padding: 10px 20px;
-            background: #ef4444;
-            color: white;
-            border: none;
-            border-radius: 8px;
-            font-weight: bold;
-            cursor: pointer;
-        }
-    </style>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<meta name="apple-mobile-web-app-capable" content="yes"/>
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
+<meta name="apple-mobile-web-app-title" content="Bible Tracker"/>
+<meta name="theme-color" content="#0f0e17"/>
+<title>Bible Chapter Tracker</title>
+<link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#0f0e17;
+  --surface:#1a1828;
+  --surface2:#221f33;
+  --border:#2e2a45;
+  --text:#e8e4d9;
+  --muted:#7a7494;
+  --mid:#a099c4;
+  --gold:#d4a843;
+  --gold2:#f0c060;
+  --green:#4ade80;
+  --green-dim:#1a3d28;
+  --green-border:#2d6a44;
+  --purple:#7c6bc4;
+  --purple2:#a594e8;
+  --rose:#e07070;
+  --sat:env(safe-area-inset-top,0px);
+  --sab:env(safe-area-inset-bottom,0px);
+}
+html,body{min-height:100%;background:var(--bg);color:var(--text);font-family:'Crimson Pro',Georgia,serif;overflow-x:hidden;}
+
+/* Parchment texture overlay */
+body::before{content:'';position:fixed;inset:0;background:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='400' height='400'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='400' height='400' filter='url(%23n)' opacity='0.035'/%3E%3C/svg%3E");pointer-events:none;z-index:0;opacity:.4;}
+
+/* HEADER */
+header{position:sticky;top:0;z-index:50;background:linear-gradient(180deg,rgba(15,14,23,.98) 0%,rgba(15,14,23,.92) 100%);border-bottom:1px solid var(--border);padding:calc(16px + var(--sat)) 20px 12px;backdrop-filter:blur(12px);text-align:center;}
+.header-ornament{font-size:11px;letter-spacing:.25em;color:var(--gold);text-transform:uppercase;opacity:.7;margin-bottom:6px;}
+h1{font-family:'Cinzel',serif;font-size:clamp(20px,5vw,28px);font-weight:700;color:var(--gold);letter-spacing:.08em;line-height:1;margin-bottom:4px;text-shadow:0 0 40px rgba(212,168,67,.3);}
+.header-sub{font-size:12px;color:var(--muted);letter-spacing:.15em;text-transform:uppercase;margin-bottom:14px;font-style:italic;}
+
+/* PROGRESS */
+.progress-wrap{width:100%;max-width:480px;margin:0 auto 6px;}
+.progress-track{height:6px;background:var(--surface2);border-radius:3px;overflow:hidden;border:1px solid var(--border);}
+.progress-fill{height:100%;background:linear-gradient(90deg,var(--gold),var(--gold2));border-radius:3px;transition:width .4s ease;width:0%;}
+.progress-stats{display:flex;justify-content:space-between;align-items:center;margin-top:6px;font-size:11px;color:var(--muted);letter-spacing:.05em;}
+.progress-pct{font-family:'Cinzel',serif;font-size:13px;color:var(--gold);font-weight:600;}
+
+/* TESTAMENT TABS */
+.testament-tabs{display:flex;gap:0;max-width:480px;margin:14px auto 0;border:1px solid var(--border);border-radius:10px;overflow:hidden;}
+.testament-tab{flex:1;background:none;border:none;color:var(--muted);padding:8px 12px;cursor:pointer;font-family:'Cinzel',serif;font-size:11px;letter-spacing:.1em;transition:all .2s;-webkit-tap-highlight-color:transparent;}
+.testament-tab.active{background:var(--surface2);color:var(--gold);}
+
+/* MAIN */
+#main{max-width:500px;margin:0 auto;padding:18px 16px calc(40px + var(--sab));}
+
+/* TESTAMENT SECTION */
+.testament-heading{display:flex;align-items:center;gap:12px;margin:20px 0 12px;}
+.testament-heading span{font-family:'Cinzel',serif;font-size:11px;letter-spacing:.2em;text-transform:uppercase;color:var(--gold);opacity:.8;white-space:nowrap;}
+.testament-heading::before,.testament-heading::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,var(--border));}
+.testament-heading::after{background:linear-gradient(90deg,var(--border),transparent);}
+
+/* BOOK CARD */
+.book-card{background:var(--surface);border:1px solid var(--border);border-radius:14px;margin-bottom:8px;overflow:hidden;transition:border-color .2s,box-shadow .2s;}
+.book-card.complete{border-color:var(--gold);box-shadow:0 0 20px rgba(212,168,67,.12);}
+.book-card.in-progress{border-color:var(--green-border);}
+
+.book-header{padding:13px 15px;cursor:pointer;display:flex;justify-content:space-between;align-items:center;user-select:none;-webkit-tap-highlight-color:transparent;gap:10px;}
+.book-header:active{background:var(--surface2);}
+
+.book-left{display:flex;align-items:center;gap:10px;min-width:0;}
+.book-icon{font-size:16px;flex-shrink:0;}
+.book-name{font-family:'Cinzel',serif;font-size:13px;font-weight:600;color:var(--text);letter-spacing:.04em;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.book-card.complete .book-name{color:var(--gold);}
+
+.book-right{display:flex;align-items:center;gap:8px;flex-shrink:0;}
+.book-mini-bar{width:48px;height:4px;background:var(--surface2);border-radius:2px;overflow:hidden;}
+.book-mini-fill{height:100%;background:var(--green);border-radius:2px;transition:width .3s;}
+.book-card.complete .book-mini-fill{background:linear-gradient(90deg,var(--gold),var(--gold2));}
+.book-count{font-size:11px;color:var(--muted);font-family:'Cinzel',serif;white-space:nowrap;}
+.book-card.complete .book-count{color:var(--gold);}
+.chevron{font-size:10px;color:var(--muted);transition:transform .2s;}
+.book-card.open .chevron{transform:rotate(180deg);}
+
+/* CHAPTER GRID */
+.chapter-panel{display:none;border-top:1px solid var(--border);background:var(--surface2);padding:14px;}
+.book-card.open .chapter-panel{display:block;}
+
+.bulk-row{display:flex;gap:8px;margin-bottom:12px;}
+.bulk-btn{flex:1;background:none;border:1px solid var(--border);color:var(--muted);border-radius:8px;padding:6px;font-size:11px;font-family:'Cinzel',serif;letter-spacing:.06em;cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;}
+.bulk-btn:hover,.bulk-btn:active{border-color:var(--gold);color:var(--gold);}
+.bulk-btn.clear:hover,.bulk-btn.clear:active{border-color:var(--rose);color:var(--rose);}
+
+.chapter-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;}
+@media(max-width:360px){.chapter-grid{grid-template-columns:repeat(5,1fr);}}
+
+.ch-btn{aspect-ratio:1;border:1px solid var(--border);background:var(--bg);border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:600;color:var(--mid);cursor:pointer;transition:all .15s;-webkit-tap-highlight-color:transparent;font-family:'Crimson Pro',serif;position:relative;overflow:hidden;}
+.ch-btn:active{transform:scale(.92);}
+.ch-btn.done{background:var(--green-dim);border-color:var(--green-border);color:var(--green);}
+.ch-btn.done::after{content:'';position:absolute;inset:0;background:radial-gradient(circle at center,rgba(74,222,128,.15),transparent 70%);}
+
+/* RESET */
+.reset-wrap{text-align:center;padding:20px 0 10px;}
+.reset-btn{background:none;border:1px solid #3d2020;color:#7a4040;border-radius:10px;padding:10px 24px;font-size:12px;font-family:'Cinzel',serif;letter-spacing:.1em;cursor:pointer;transition:all .2s;}
+.reset-btn:hover{border-color:var(--rose);color:var(--rose);}
+
+/* TOAST */
+#toast{position:fixed;bottom:calc(20px + var(--sab));left:50%;transform:translateX(-50%) translateY(16px);background:var(--surface);border:1px solid var(--gold);color:var(--gold);padding:9px 18px;border-radius:10px;font-size:13px;font-family:'Cinzel',serif;letter-spacing:.06em;opacity:0;transition:all .3s;z-index:200;white-space:nowrap;pointer-events:none;}
+#toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
+
+/* SCROLL TOP */
+#scroll-top{position:fixed;bottom:calc(20px + var(--sab));right:16px;background:var(--surface);border:1px solid var(--border);color:var(--muted);width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;cursor:pointer;font-size:16px;opacity:0;transition:opacity .2s;z-index:100;-webkit-tap-highlight-color:transparent;}
+#scroll-top.visible{opacity:1;}
+</style>
 </head>
 <body>
 
-    <header>
-        <h1>Bible Tracker</h1>
-        <div id="progress-bar-container"><div id="progress-bar"></div></div>
-        <div id="stats">0 / 1189 Chapters Completed (0%)</div>
-    </header>
+<div id="toast"></div>
+<button id="scroll-top" onclick="window.scrollTo({top:0,behavior:'smooth'})">↑</button>
 
-    <div class="container" id="books-container">
-        <!-- Books will be injected here -->
+<header>
+  <div class="header-ornament">✦ &nbsp; Scripture Reading &nbsp; ✦</div>
+  <h1>Bible Tracker</h1>
+  <div class="header-sub">Through the whole Word</div>
+  <div class="progress-wrap">
+    <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
+    <div class="progress-stats">
+      <span id="stats-left">0 / 1,189 chapters</span>
+      <span class="progress-pct" id="stats-pct">0%</span>
     </div>
+  </div>
+  <div class="testament-tabs">
+    <button class="testament-tab active" onclick="filterView('all',this)">All</button>
+    <button class="testament-tab" onclick="filterView('ot',this)">Old Testament</button>
+    <button class="testament-tab" onclick="filterView('nt',this)">New Testament</button>
+    <button class="testament-tab" onclick="filterView('unread',this)">Unread</button>
+  </div>
+</header>
 
-    <button class="reset-btn" onclick="resetAll()">Reset All Progress</button>
+<div id="main"></div>
 
-    <script>
-        const books = [
-            {n:"Genesis", c:50}, {n:"Exodus", c:40}, {n:"Leviticus", c:27}, {n:"Numbers", c:36}, {n:"Deuteronomy", c:34},
-            {n:"Joshua", c:24}, {n:"Judges", c:21}, {n:"Ruth", c:4}, {n:"1 Samuel", c:31}, {n:"2 Samuel", c:24},
-            {n:"1 Kings", c:22}, {n:"2 Kings", c:25}, {n:"1 Chronicles", c:29}, {n:"2 Chronicles", c:36}, {n:"Ezra", c:10},
-            {n:"Nehemiah", c:13}, {n:"Esther", c:10}, {n:"Job", c:42}, {n:"Psalms", c:150}, {n:"Proverbs", c:31},
-            {n:"Ecclesiastes", c:12}, {n:"Song of Solomon", c:8}, {n:"Isaiah", c:66}, {n:"Jeremiah", c:52}, {n:"Lamentations", c:5},
-            {n:"Ezekiel", c:48}, {n:"Daniel", c:12}, {n:"Hosea", c:14}, {n:"Joel", c:3}, {n:"Amos", c:9},
-            {n:"Obadiah", c:1}, {n:"Jonah", c:4}, {n:"Micah", c:7}, {n:"Nahum", c:3}, {n:"Habakkuk", c:3},
-            {n:"Zephaniah", c:3}, {n:"Haggai", c:2}, {n:"Zechariah", c:14}, {n:"Malachi", c:4},
-            {n:"Matthew", c:28}, {n:"Mark", c:16}, {n:"Luke", c:24}, {n:"John", c:21}, {n:"Acts", c:28},
-            {n:"Romans", c:16}, {n:"1 Corinthians", c:16}, {n:"2 Corinthians", c:13}, {n:"Galatians", c:6},
-            {n:"Ephesians", c:6}, {n:"Philippians", c:4}, {n:"Colossians", c:4}, {n:"1 Thessalonians", c:5},
-            {n:"2 Thessalonians", c:3}, {n:"1 Timothy", c:6}, {n:"2 Timothy", c:4}, {n:"Titus", c:3},
-            {n:"Philemon", c:1}, {n:"Hebrews", c:13}, {n:"James", c:5}, {n:"1 Peter", c:5},
-            {n:"2 Peter", c:3}, {n:"1 John", c:5}, {n:"2 John", c:1}, {n:"3 John", c:1},
-            {n:"Jude", c:1}, {n:"Revelation", c:22}
-        ];
+<script>
+const OT = [
+  {n:"Genesis",c:50,icon:"🌍"},{n:"Exodus",c:40,icon:"🔥"},{n:"Leviticus",c:27,icon:"📜"},
+  {n:"Numbers",c:36,icon:"🏕️"},{n:"Deuteronomy",c:34,icon:"⚖️"},{n:"Joshua",c:24,icon:"⚔️"},
+  {n:"Judges",c:21,icon:"🗡️"},{n:"Ruth",c:4,icon:"🌾"},{n:"1 Samuel",c:31,icon:"👑"},
+  {n:"2 Samuel",c:24,icon:"👑"},{n:"1 Kings",c:22,icon:"🏛️"},{n:"2 Kings",c:25,icon:"🏛️"},
+  {n:"1 Chronicles",c:29,icon:"📖"},{n:"2 Chronicles",c:36,icon:"📖"},{n:"Ezra",c:10,icon:"🏗️"},
+  {n:"Nehemiah",c:13,icon:"🧱"},{n:"Esther",c:10,icon:"👸"},{n:"Job",c:42,icon:"🌪️"},
+  {n:"Psalms",c:150,icon:"🎵"},{n:"Proverbs",c:31,icon:"💡"},{n:"Ecclesiastes",c:12,icon:"🌀"},
+  {n:"Song of Solomon",c:8,icon:"🌹"},{n:"Isaiah",c:66,icon:"✨"},{n:"Jeremiah",c:52,icon:"😢"},
+  {n:"Lamentations",c:5,icon:"💔"},{n:"Ezekiel",c:48,icon:"🔮"},{n:"Daniel",c:12,icon:"🦁"},
+  {n:"Hosea",c:14,icon:"💞"},{n:"Joel",c:3,icon:"🌾"},{n:"Amos",c:9,icon:"🐑"},
+  {n:"Obadiah",c:1,icon:"🦅"},{n:"Jonah",c:4,icon:"🐋"},{n:"Micah",c:7,icon:"🌄"},
+  {n:"Nahum",c:3,icon:"⚡"},{n:"Habakkuk",c:3,icon:"🙏"},{n:"Zephaniah",c:3,icon:"🔔"},
+  {n:"Haggai",c:2,icon:"🏛️"},{n:"Zechariah",c:14,icon:"🕊️"},{n:"Malachi",c:4,icon:"☀️"}
+];
+const NT = [
+  {n:"Matthew",c:28,icon:"⭐"},{n:"Mark",c:16,icon:"⚡"},{n:"Luke",c:24,icon:"✍️"},
+  {n:"John",c:21,icon:"💡"},{n:"Acts",c:28,icon:"🌍"},{n:"Romans",c:16,icon:"📜"},
+  {n:"1 Corinthians",c:16,icon:"❤️"},{n:"2 Corinthians",c:13,icon:"❤️"},{n:"Galatians",c:6,icon:"🕊️"},
+  {n:"Ephesians",c:6,icon:"🛡️"},{n:"Philippians",c:4,icon:"😊"},{n:"Colossians",c:4,icon:"👑"},
+  {n:"1 Thessalonians",c:5,icon:"🌟"},{n:"2 Thessalonians",c:3,icon:"🌟"},{n:"1 Timothy",c:6,icon:"📋"},
+  {n:"2 Timothy",c:4,icon:"📋"},{n:"Titus",c:3,icon:"📝"},{n:"Philemon",c:1,icon:"🤝"},
+  {n:"Hebrews",c:13,icon:"✝️"},{n:"James",c:5,icon:"💪"},{n:"1 Peter",c:5,icon:"🪨"},
+  {n:"2 Peter",c:3,icon:"🪨"},{n:"1 John",c:5,icon:"❤️"},{n:"2 John",c:1,icon:"💌"},
+  {n:"3 John",c:1,icon:"💌"},{n:"Jude",c:1,icon:"⚔️"},{n:"Revelation",c:22,icon:"🔯"}
+];
+const ALL_BOOKS = [...OT,...NT];
+const OT_NAMES = new Set(OT.map(b=>b.n));
 
-        let state = JSON.parse(localStorage.getItem('bible_check_state') || '{}');
+let state = {};
+try { state = JSON.parse(localStorage.getItem('bible_v2')||'{}'); } catch{}
+let currentFilter = 'all';
+let openBooks = new Set();
 
-        function save() {
-            localStorage.setItem('bible_check_state', JSON.stringify(state));
-            updateProgress();
-        }
+const $=id=>document.getElementById(id);
 
-        function updateProgress() {
-            const total = 1189;
-            const done = Object.values(state).filter(v => v === true).length;
-            const pct = Math.round((done / total) * 100);
-            document.getElementById('progress-bar').style.width = pct + '%';
-            document.getElementById('stats').innerText = `${done} / ${total} Chapters Completed (${pct}%)`;
-        }
+let toastTimer;
+function showToast(msg){
+  const t=$("toast"); t.textContent=msg; t.classList.add("show");
+  clearTimeout(toastTimer); toastTimer=setTimeout(()=>t.classList.remove("show"),2000);
+}
 
-        function toggleChapter(bookName, ch, btn) {
-            const key = `${bookName}-${ch}`;
-            state[key] = !state[key];
-            if (!state[key]) delete state[key];
-            btn.classList.toggle('done', !!state[key]);
-            save();
-            updateBookCount(bookName);
-        }
+function save(){ localStorage.setItem('bible_v2',JSON.stringify(state)); updateProgress(); }
 
-        function updateBookCount(bookName) {
-            const book = books.find(b => b.n === bookName);
-            const countEl = document.getElementById(`count-${bookName}`);
-            const done = Array.from({length: book.c}, (_, i) => state[`${bookName}-${i+1}`]).filter(Boolean).length;
-            countEl.innerText = `${done}/${book.c}`;
-        }
+function updateProgress(){
+  const total=1189;
+  const done=Object.values(state).filter(v=>v===true).length;
+  const pct=Math.round((done/total)*100);
+  $("progress-fill").style.width=pct+"%";
+  $("stats-left").textContent=`${done.toLocaleString()} / 1,189 chapters`;
+  $("stats-pct").textContent=pct+"%";
+}
 
-        function toggleBook(bookName) {
-            const grid = document.getElementById(`grid-${bookName}`);
-            const isVisible = grid.style.display === 'grid';
-            grid.style.display = isVisible ? 'none' : 'grid';
-        }
+function bookDone(book){
+  return Array.from({length:book.c},(_,i)=>state[`${book.n}-${i+1}`]).filter(Boolean).length;
+}
 
-        function bulk(bookName, check) {
-            const book = books.find(b => b.n === bookName);
-            for (let i = 1; i <= book.c; i++) {
-                const key = `${bookName}-${i}`;
-                if (check) state[key] = true;
-                else delete state[key];
-                
-                const btn = document.getElementById(`btn-${bookName}-${i}`);
-                if (btn) {
-                    if (check) btn.classList.add('done');
-                    else btn.classList.remove('done');
-                }
-            }
-            save();
-            updateBookCount(bookName);
-        }
+function toggleChapter(bookName,ch,btn){
+  const key=`${bookName}-${ch}`;
+  state[key]=!state[key];
+  if(!state[key])delete state[key];
+  btn.classList.toggle('done',!!state[key]);
+  save();
+  refreshBookCard(bookName);
+}
 
-        function resetAll() {
-            if (confirm("Are you sure you want to reset ALL progress?")) {
-                state = {};
-                save();
-                location.reload();
-            }
-        }
+function refreshBookCard(bookName){
+  const book=ALL_BOOKS.find(b=>b.n===bookName);
+  const done=bookDone(book);
+  const pct=done/book.c;
+  const card=document.getElementById(`card-${bookName}`);
+  if(!card)return;
+  card.classList.toggle('complete',done===book.c);
+  card.classList.toggle('in-progress',done>0&&done<book.c);
+  const fill=card.querySelector('.book-mini-fill');
+  if(fill)fill.style.width=(pct*100)+"%";
+  const count=card.querySelector('.book-count');
+  if(count)count.textContent=`${done}/${book.c}`;
+}
 
-        function init() {
-            const container = document.getElementById('books-container');
-            books.forEach(book => {
-                const section = document.createElement('div');
-                section.className = 'book-section';
-                
-                const doneCount = Array.from({length: book.c}, (_, i) => state[`${book.n}-${i+1}`]).filter(Boolean).length;
-                
-                section.innerHTML = `
-                    <div class="book-header" onclick="toggleBook('${book.n}')">
-                        <div class="book-title">${book.n}</div>
-                        <div class="book-count" id="count-${book.n}">${doneCount}/${book.c}</div>
-                    </div>
-                    <div class="chapter-grid" id="grid-${book.n}">
-                        <div class="bulk-actions" style="grid-column: span 5">
-                            <button class="bulk-btn" onclick="event.stopPropagation(); bulk('${book.n}', true)">Check All</button>
-                            <button class="bulk-btn" onclick="event.stopPropagation(); bulk('${book.n}', false)">Clear All</button>
-                        </div>
-                        ${Array.from({length: book.c}, (_, i) => {
-                            const ch = i + 1;
-                            const isDone = state[`${book.n}-${ch}`] ? 'done' : '';
-                            return `<button id="btn-${book.n}-${ch}" class="chapter-btn ${isDone}" onclick="toggleChapter('${book.n}', ${ch}, this)">${ch}</button>`;
-                        }).join('')}
-                    </div>
-                `;
-                container.appendChild(section);
-            });
-            updateProgress();
-        }
+function toggleBook(bookName){
+  const card=document.getElementById(`card-${bookName}`);
+  if(!card)return;
+  if(openBooks.has(bookName)){openBooks.delete(bookName);card.classList.remove('open');}
+  else{openBooks.add(bookName);card.classList.add('open');}
+}
 
-        init();
-    </script>
+function bulk(bookName,check){
+  const book=ALL_BOOKS.find(b=>b.n===bookName);
+  for(let i=1;i<=book.c;i++){
+    const key=`${bookName}-${i}`;
+    if(check)state[key]=true; else delete state[key];
+    const btn=document.getElementById(`ch-${bookName}-${i}`);
+    if(btn)btn.classList.toggle('done',check);
+  }
+  save();
+  refreshBookCard(bookName);
+  showToast(check?`✓ ${bookName} complete`:`✗ ${bookName} cleared`);
+}
+
+function resetAll(){
+  if(!confirm("Reset ALL reading progress? This cannot be undone."))return;
+  state={};
+  save();
+  location.reload();
+}
+
+function filterView(f,el){
+  currentFilter=f;
+  document.querySelectorAll('.testament-tab').forEach(b=>b.classList.remove('active'));
+  el.classList.add('active');
+  buildUI();
+}
+
+function makeBookCard(book){
+  const done=bookDone(book);
+  const pct=done/book.c;
+  const complete=done===book.c;
+  const inProgress=done>0&&done<book.c;
+  const isOpen=openBooks.has(book.n);
+
+  const card=document.createElement('div');
+  card.className=`book-card${complete?' complete':''}${inProgress?' in-progress':''}${isOpen?' open':''}`;
+  card.id=`card-${book.n}`;
+
+  const chapters=Array.from({length:book.c},(_,i)=>{
+    const ch=i+1;
+    const isDone=state[`${book.n}-${ch}`];
+    return `<button id="ch-${book.n}-${ch}" class="ch-btn${isDone?' done':''}" onclick="toggleChapter('${book.n}',${ch},this)">${ch}</button>`;
+  }).join('');
+
+  card.innerHTML=`
+    <div class="book-header" onclick="toggleBook('${book.n}')">
+      <div class="book-left">
+        <span class="book-icon">${book.icon}</span>
+        <span class="book-name">${book.n}</span>
+      </div>
+      <div class="book-right">
+        <div class="book-mini-bar"><div class="book-mini-fill" style="width:${pct*100}%"></div></div>
+        <span class="book-count">${done}/${book.c}</span>
+        <span class="chevron">▼</span>
+      </div>
+    </div>
+    <div class="chapter-panel">
+      <div class="bulk-row">
+        <button class="bulk-btn" onclick="event.stopPropagation();bulk('${book.n}',true)">✓ Mark All Read</button>
+        <button class="bulk-btn clear" onclick="event.stopPropagation();bulk('${book.n}',false)">✗ Clear All</button>
+      </div>
+      <div class="chapter-grid">${chapters}</div>
+    </div>
+  `;
+  return card;
+}
+
+function buildUI(){
+  const main=$("main");
+  main.innerHTML='';
+
+  let booksToShow=[];
+  if(currentFilter==='all'){booksToShow=ALL_BOOKS;}
+  else if(currentFilter==='ot'){booksToShow=OT;}
+  else if(currentFilter==='nt'){booksToShow=NT;}
+  else if(currentFilter==='unread'){booksToShow=ALL_BOOKS.filter(b=>bookDone(b)<b.c);}
+
+  if(currentFilter==='all'||currentFilter==='ot'){
+    const otBooks=booksToShow.filter(b=>OT_NAMES.has(b.n));
+    if(otBooks.length){
+      const h=document.createElement('div');
+      h.className='testament-heading';
+      h.innerHTML=`<span>Old Testament</span>`;
+      main.appendChild(h);
+      otBooks.forEach(b=>main.appendChild(makeBookCard(b)));
+    }
+  }
+
+  if(currentFilter==='all'||currentFilter==='nt'){
+    const ntBooks=booksToShow.filter(b=>!OT_NAMES.has(b.n));
+    if(ntBooks.length){
+      const h=document.createElement('div');
+      h.className='testament-heading';
+      h.innerHTML=`<span>New Testament</span>`;
+      main.appendChild(h);
+      ntBooks.forEach(b=>main.appendChild(makeBookCard(b)));
+    }
+  }
+
+  if(currentFilter==='unread'){
+    if(booksToShow.length===0){
+      main.innerHTML=`<div style="text-align:center;padding:60px 20px;color:var(--gold);font-family:'Cinzel',serif;">
+        <div style="font-size:48px;margin-bottom:16px">✦</div>
+        <div style="font-size:18px;margin-bottom:8px">Scripture Complete!</div>
+        <div style="font-size:13px;color:var(--muted);font-style:italic">You've read the entire Bible.</div>
+      </div>`;
+    } else {
+      // show OT unread then NT unread
+      const otU=booksToShow.filter(b=>OT_NAMES.has(b.n));
+      const ntU=booksToShow.filter(b=>!OT_NAMES.has(b.n));
+      if(otU.length){const h=document.createElement('div');h.className='testament-heading';h.innerHTML=`<span>Old Testament</span>`;main.appendChild(h);otU.forEach(b=>main.appendChild(makeBookCard(b)));}
+      if(ntU.length){const h=document.createElement('div');h.className='testament-heading';h.innerHTML=`<span>New Testament</span>`;main.appendChild(h);ntU.forEach(b=>main.appendChild(makeBookCard(b)));}
+    }
+  }
+
+  const wrap=document.createElement('div');
+  wrap.className='reset-wrap';
+  wrap.innerHTML=`<button class="reset-btn" onclick="resetAll()">↺ Reset All Progress</button>`;
+  main.appendChild(wrap);
+
+  updateProgress();
+}
+
+// Scroll-to-top button
+window.addEventListener('scroll',()=>{
+  $("scroll-top").classList.toggle('visible',window.scrollY>300);
+});
+
+buildUI();
+</script>
 </body>
 </html>
